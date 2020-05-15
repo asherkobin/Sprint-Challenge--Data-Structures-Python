@@ -103,8 +103,9 @@ class RingBuffer:
         while node:
           if node.next is self.oldest_item:
             node.next = Node(item)
-            self.oldest_item = self.oldest_item
-            self.storage.length += 1
+            self.oldest_item = self.storage.head # correct
+            #self.oldest_item = self.oldest_item # NOOP!
+            #self.storage.length += 1 # OOPSIES!
             break
           node = node.next
 

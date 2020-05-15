@@ -59,53 +59,54 @@ class RingBuffer:
     self.oldest_item = None
 
   def append(self, item):
-    if len(self.storage) == 0:
-      self.oldest_item = Node(item)
-      self.storage.head = self.oldest_item
-      self.storage.length += 1
-    elif self.capacity > len(self.storage):
-      new_node = Node(item)
-      node = self.storage.head
-      while node:
-        if node.next is None:
-          node.next = Node(item)
-          self.oldest_item = self.oldest_item
-          self.storage.length += 1
-          break
-        node = node.next
-    else:
-      if self.oldest_item.next:
-        # old = old.next
-        item_to_remove = self.oldest_item
-        self.oldest_item = self.oldest_item.next
-        # remove old
-        if item_to_remove is self.storage.head:
-          new_node = Node(item)
-          new_node.next = self.storage.head.next
-          self.storage.head.next = None
-          self.storage.head = new_node
-        else:
-          node = self.storage.head
-          while node:
-            if node.next is item_to_remove:
-              new_node = Node(item)
-              new_node.next = self.oldest_item
-              if new_node is self.storage.head:
-                self.storage.head = new_node
-              else:
-                node.next = new_node
-              break
-            node = node.next
+    # if there is capacity, insert node (could have created LinkedList.insert)
+    if self.capacity > len(self.storage):
+      if not self.storage.head:
+        self.storage.head = Node(item)
+        self.oldest_item = self.storage.head
+        self.storage.length += 1
       else:
-        # find item that .next is old
-        # reassign .next to new
         node = self.storage.head
         while node:
-          if node.next is self.oldest_item:
+          if node.next is None:
             node.next = Node(item)
-            self.oldest_item = self.storage.head # correct
-            #self.oldest_item = self.oldest_item # NOOP!
-            #self.storage.length += 1 # OOPSIES!
+            self.oldest_item = self.oldest_item
+            self.storage.length += 1
+            break
+          node = node.next
+    # else, remove oldest node and put new node in it's place (i.e swap)
+    else:
+      # remove the oldest item
+      # if oldest_item is the head, replace it with new item
+      item_to_remove = self.oldest_item 
+      if item_to_remove is self.storage.head:
+        self.oldest_item = self.storage.head.next
+        new_node = Node(item)
+        new_node.next = self.storage.head.next
+        self.storage.head.next = None
+        self.storage.head = new_node
+      # else if oldest_item is the tail, replace it with new item
+      elif self.oldest_item.next is None:
+        node = self.storage.head
+        while node:
+          if node.next is item_to_remove:
+            new_node = Node(item)
+            node.next = new_node
+            self.oldest_item = self.storage.head
+            break
+          node = node.next
+      # else 
+      else:
+        self.oldest_item = self.oldest_item.next
+        node = self.storage.head
+        while node:
+          if node.next is item_to_remove:
+            new_node = Node(item)
+            new_node.next = self.oldest_item
+            if new_node is self.storage.head:
+              self.storage.head = new_node
+            else:
+              node.next = new_node
             break
           node = node.next
 
@@ -117,7 +118,7 @@ class RingBuffer:
       node = node.next
     return arr
 
-buffer = RingBuffer(3)
+buffer = RingBuffer(6)
 
 print(buffer.get())  # should return []
 
@@ -139,3 +140,15 @@ print(buffer.get())   # should return ['d', 'e', 'c']
 buffer.append('f')
 
 print(buffer.get())   # should return ['d', 'e', 'f']
+
+buffer.append('g')
+buffer.append('h')
+buffer.append('i')
+buffer.append('j')
+buffer.append('k')
+buffer.append('l')
+buffer.append('m')
+buffer.append('n')
+buffer.append('o')
+
+print(buffer.get())   # should return ['g', 'e', 'f']
